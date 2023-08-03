@@ -12,7 +12,7 @@ public class ParsData {
         HashMap<String, Object> dataDic = new HashMap<>();
         StringBuilder sb = new StringBuilder();
 
-        if (data.length < 4) {
+        if (data.length < 6) {
             System.out.println("Ошибка: недостаточно данных");
             return dataDic;
         }
@@ -22,11 +22,8 @@ public class ParsData {
                 if (i.equals("f") || i.equals("m")) {
                     dataDic.put("gender", i);
                 } else {
-                    try {
-                        throw new GenderException(i);
-                    } catch (GenderException e) {
-                        System.out.println(e.getMessage());
-                    }
+                    System.out.println("Ошибка: некорректные данные - " + i);
+                    return dataDic;
                 }
             } else if (i.matches("\\d{1,2}\\.\\d{1,2}\\.\\d{4}")) {
                 String[] arrayDate = i.split("\\.");
@@ -34,23 +31,20 @@ public class ParsData {
                 int month = Integer.parseInt(arrayDate[1]);
                 int year = Integer.parseInt(arrayDate[2]);
 
-                try {
-                    LocalDate.parse(i, DateTimeFormatter.ofPattern("dd.MM.yyyy"));
-                    // Дата корректна, добавляем ее в словарь
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+                if (isValidDate(i, formatter)) {
                     dataDic.put("date", i);
-                } catch (DateTimeParseException e) {
+                } else {
                     System.out.println("Ошибка: некорректный формат даты - " + i);
+                    return dataDic;
                 }
             } else if (i.matches("[0-9]+")) {
                 dataDic.put("tel", i);
             } else if (i.matches("[A-Za-z]+")) {
                 sb.append(i).append(" ");
             } else {
-                try {
-                    throw new DataException(i);
-                } catch (DataException e) {
-                    System.out.println(e.getMessage());
-                }
+                System.out.println("Ошибка: некорректный формат данных - " + i);
+                return dataDic;
             }
         }
 
@@ -62,5 +56,14 @@ public class ParsData {
         }
 
         return dataDic;
+    }
+
+    private boolean isValidDate(String dateStr, DateTimeFormatter formatter) {
+        try {
+            LocalDate.parse(dateStr, formatter);
+            return true;
+        } catch (DateTimeParseException e) {
+            return false;
+        }
     }
 }
